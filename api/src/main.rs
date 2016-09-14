@@ -7,13 +7,7 @@ use uuid::Uuid;
 fn main()
 {
     let mut server = Nickel::new();
-/*
-    server.get("/newUUID", middleware! { |_, mut response|
-        response.set(MediaType::Json);
 
-        "{'uuid': 'surprise'}"
-    });
-*/
     server.get("/newUUID", middleware! { |request, mut response|
         let uuid = Uuid::new_v4();
         let mut json_string = "{'uuid': '".to_owned();
