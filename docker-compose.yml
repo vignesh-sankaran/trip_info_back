@@ -1,0 +1,11 @@
+version: '2'
+services:
+  api:
+    build: ./api
+    network_mode: "host"
+    ports:
+    - "10000:10000"
+    depends_on:
+    - db
+  db:
+    build: ./db
