@@ -8,7 +8,7 @@ A collection of systems which serve as the backend for Trip Info. It consists of
 ## API
 Interface between mobile clients and other backend systems. All requests are made in HTTPS. The endpoints are as follows:
 
-* NewId GET: Generate a unique identifier for each device, assuming 1 device per user
+* NewUUID GET: Generate a unique identifier for each device, assuming 1 device per user
 * {Id}/Pedometer POST: Pass all historical pedometer to DB
 * {Id}/Pedometer PUT: Add new pedometer record at 12am
 * {Id}/Journey/Home POST: Pass in home address and chosen PT stop
