@@ -3,4 +3,5 @@ RUN mkdir /app
 WORKDIR /app
 ADD . /app/
 RUN cargo build
-ENTRYPOINT cargo run
+EXPOSE 20000
+ENTRYPOINT ./target/debug/api
