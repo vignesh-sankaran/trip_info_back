@@ -1,4 +1,4 @@
-FROM scorpil/rust:1.11
+FROM liuchong/rustup:stable
 RUN mkdir /app
 WORKDIR /app
 ADD . /app/
