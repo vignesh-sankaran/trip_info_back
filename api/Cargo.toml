@@ -5,6 +5,4 @@ authors = ["Vignesh Sankaran <developer@ferndrop.com>"]
 
 [dependencies]
 nickel = "*"
-serde = "0.8.8"
-serde_json = "0.8.1"
 uuid = { version = "0.3.1", features = ["v4"] }

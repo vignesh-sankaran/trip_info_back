@@ -6,8 +6,7 @@ RUN curl https://sh.rustup.rs -s >> rustup.sh
 RUN chmod 755 /rust/rustup.sh
 RUN ./rustup.sh -y
 ENV PATH=/root/.cargo/bin:$PATH SSL_VERSION=1.0.2h
-RUN rustup install beta
-RUN rustup default beta
+RUN rustup default 1.11.0
 RUN curl https://www.openssl.org/source/openssl-$SSL_VERSION.tar.gz -O && \
     tar -xzf openssl-$SSL_VERSION.tar.gz && \
     cd openssl-$SSL_VERSION && ./config && make depend && make install && \
