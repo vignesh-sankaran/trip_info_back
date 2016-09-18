@@ -5,4 +5,6 @@ authors = ["Vignesh Sankaran <developer@ferndrop.com>"]
 
 [dependencies]
 nickel = "0.8.1"
+mongodb = "0.1.6"
+bson = "0.3.0"
 uuid = { version = "0.3.1", features = ["v4"] }

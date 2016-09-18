@@ -8,4 +8,4 @@ services:
     depends_on:
     - db
   db:
-    build: ./db
+    build: ./dbd
