@@ -8,4 +8,7 @@ services:
     depends_on:
     - db
   db:
-    build: ./dbd
+    build: ./db
+    network_mode: "bridge"
+    ports:
+    - "24017:24017"
