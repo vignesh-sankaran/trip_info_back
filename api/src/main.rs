@@ -23,7 +23,7 @@ fn main()
         json_string.push_str(uuid_string);
         json_string.push_str("\" }");
 
-        let client = Client::connect("localhost", 27017).ok().expect("Could not connect to users DB");
+        let client = Client::connect("127.0.0.1", 27017).ok().expect("Could not connect to users DB");
         let auth_db = client.db("auth");
         auth_db.auth("system", "system").unwrap();        
 
