@@ -4,8 +4,11 @@ extern crate uuid;
 #[macro_use(bson, doc)]
 extern crate bson;
 extern crate mongodb;
+extern crate rustc_serialize;
 
-use nickel::{Nickel, HttpRouter, MediaType};
+use nickel::{Nickel, JsonBody, HttpRouter, MediaType};
+use nickel::status::StatusCode::{self};
+use rustc_serialize::json::{self,Json, ToJson};
 use uuid::Uuid;
 use bson::Bson;
 use mongodb::{Client, ThreadedClient, CommandType};
@@ -23,9 +26,15 @@ fn main()
         json_string.push_str(uuid_string);
         json_string.push_str("\" }");
 
-        let client = Client::connect("127.0.0.1", 27017).ok().expect("Could not connect to users DB");
+        let client = Client::with_uri("mongodb://localhost:27017").unwrap();
+
         let auth_db = client.db("auth");
-        auth_db.auth("system", "system").unwrap();        
+        match auth_db.auth("system", "system")
+        {
+            Err(OperationError(_)) => (),
+            Err(_) => panic!("Expected OperationError for invalid authentication, but got some other error instead"),
+            _ => panic!("Authentication succeeded despite invalid credentials")
+        };
 
         let users_coll = client.db("tripinfo").collection("users");
         let id_entry = doc!{"id" => uuid_string};

@@ -1,4 +1,4 @@
-var conn = new Mongo("0.0.0.0", 27017);
+var conn = new Mongo();
 var database = db.getSiblingDB('tripinfo');
 database.createCollection('users', { id: 'string' });
 db.createUser({ user: 'system', pwd: 'system', roles: [ { role: 'dbAdminAnyDatabase', db: 'admin' } ] });
