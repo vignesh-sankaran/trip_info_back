@@ -29,12 +29,7 @@ fn main()
         let client = Client::with_uri("mongodb://localhost:27017").unwrap();
 
         let auth_db = client.db("auth");
-        match auth_db.auth("system", "system")
-        {
-            Err(OperationError(_)) => (),
-            Err(_) => panic!("Expected OperationError for invalid authentication, but got some other error instead"),
-            _ => panic!("Authentication succeeded despite invalid credentials")
-        };
+        auth_db.auth("system", "system").unwrap();
 
         let users_coll = client.db("tripinfo").collection("users");
         let id_entry = doc!{"id" => uuid_string};
