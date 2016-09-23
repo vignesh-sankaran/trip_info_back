@@ -2,17 +2,11 @@
 extern crate nickel;
 extern crate uuid;
 #[macro_use(bson, doc)]
-extern crate bson;
 extern crate mongodb;
-extern crate rustc_serialize;
 
-use nickel::{Nickel, JsonBody, HttpRouter, MediaType};
-use nickel::status::StatusCode::{self};
-use rustc_serialize::json::{self,Json, ToJson};
+use nickel::{Nickel, HttpRouter, MediaType};
 use uuid::Uuid;
-use bson::Bson;
-use mongodb::{Client, ThreadedClient, CommandType};
-use mongodb::error::Error::OperationError;
+use mongodb::{Client, ThreadedClient};
 use mongodb::db::ThreadedDatabase;
 
 fn main()
@@ -26,10 +20,7 @@ fn main()
         json_string.push_str(uuid_string);
         json_string.push_str("\" }");
 
-        let client = Client::with_uri("mongodb://localhost:27017").unwrap();
-
-        let auth_db = client.db("auth");
-        auth_db.auth("system", "system").unwrap();
+        let client = Client::with_uri("mongodb://db:27017").unwrap();
 
         let users_coll = client.db("tripinfo").collection("users");
         let id_entry = doc!{"id" => uuid_string};
