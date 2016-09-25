@@ -6,6 +6,10 @@ name = "api"
 version = "0.0.1"
 authors = ["Vignesh Sankaran <developer@ferndrop.com>"]
 
+[lib]
+name = "prebuild"
+path = "prebuild.rs"
+
 [dependencies]
 nickel = "= 0.8.1"
 mongodb = "= 0.1.6"
