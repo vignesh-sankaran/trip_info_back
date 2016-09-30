@@ -23,21 +23,8 @@ fn main()
         json_string.push_str(uuid_string);
         json_string.push_str("\" }");
 
-        let doc = doc! { "connectionStatus" => 1};
         let client = Client::with_uri("mongodb://db:27017").unwrap();
         let auth_db = client.db("auth");
-
-        let before = auth_db.command(doc.clone(), CommandType::Suppressed, None).unwrap();
-
-        let info = match before.get("authInfo") {
-            Some(&Bson::Document(ref doc)) => doc.clone(),
-            _ => panic!("Invalid response for initial connectionStatus command")
-        };
-
-        match info.get("authenticatedUsers") {
-            Some(&Bson::Array(ref vec)) => assert!(!vec.is_empty()),
-            _ => panic!("This list doens't have any users in it...")
-        };
 
         auth_db.auth("system", "system").unwrap();
         
