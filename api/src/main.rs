@@ -1,40 +1,27 @@
-#[macro_use]
-extern crate nickel;
+extern crate iron;
 extern crate uuid;
-#[macro_use(bson, doc)]
-extern crate bson;
-extern crate mongodb;
+extern crate router;
 
-use nickel::{Nickel, HttpRouter, MediaType};
+use iron::prelude::*;
+use iron::status;
+use router::Router;
 use uuid::Uuid;
-use mongodb::{Client, ThreadedClient, CommandType};
-use mongodb::db::ThreadedDatabase;
-use bson::Bson;
 
 
 fn main()
 {
-    let mut server = Nickel::new();
+    let mut router: Router = Router::new();
+    router.get("/newUUID", newUUID_handler, "newUUID");
 
-    server.get("/newUUID", middleware! { |_, mut response|
-        let uuid = Uuid::new_v4();
-        let uuid_string = &uuid.to_string();
-        let mut json_string = "{\"uuid\": \"".to_owned();
-        json_string.push_str(uuid_string);
-        json_string.push_str("\" }");
+    Iron::new(router).http("localhost:20000").unwrap();
+}
 
-        let client = Client::with_uri("mongodb://db:27017").unwrap();
-        let auth_db = client.db("auth");
-
-        auth_db.auth("system", "system").unwrap();
-        
-        let users_coll = client.db("tripinfo").collection("users");
-        let id_entry = doc!{"id" => uuid_string};
-        users_coll.insert_one(id_entry, None).ok().expect("Failed to insert new user ID into users DB");
-
-        response.set(MediaType::Json);
-        json_string
-    });
-
-    server.listen("0.0.0.0:20000");
+fn newUUID_handler(req: &mut Request) -> IronResult<Response>
+{
+    let uuid = Uuid::new_v4();
+    let uuid_string = &uuid.to_string();
+    let mut json_string = "{\"uuid\": \"".to_owned();
+    json_string.push_str(uuid_string);
+    json_string.push_str("\" }");
+    Ok(Response::with((status::Ok)))
 }
