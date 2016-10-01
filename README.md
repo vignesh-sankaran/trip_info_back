@@ -17,4 +17,4 @@ Interface between mobile clients and other backend systems. All requests are mad
 * {Id}/Journey/Stop PUT: Stop journey
 
 ## DB
-Mongo DB was chosen for its simplicity to set up, my lack of knowledge about SQL, and a desire to set this up quickly to see how it all works and if this project is even possible.
+Postgres was chosen for its performance, and the fact that it does graph storage and GIS handling.
