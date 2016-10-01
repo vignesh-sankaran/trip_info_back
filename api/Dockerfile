@@ -11,8 +11,10 @@ WORKDIR /app
 COPY Cargo.toml /app/Cargo.toml
 COPY Cargo.lock /app/Cargo.lock
 COPY prebuild.rs /app/prebuild.rs
+COPY build.rs /app/build.rs
+COPY /src/serde_types.in.rs /app/src/serde_types.in.rs
 RUN cargo build --lib
-COPY /src /app/src
+COPY /src/main.rs /app/src/main.rs
 COPY /ssl /app/ssl
 RUN cargo build --release
 EXPOSE 20000
