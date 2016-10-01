@@ -1,6 +1,8 @@
 extern crate iron;
 extern crate uuid;
 extern crate router;
+extern crate serde;
+extern crate serde_json;
 
 use std::path::PathBuf;
 use iron::prelude::*;
@@ -8,6 +10,7 @@ use iron::status;
 use router::Router;
 use uuid::Uuid;
 
+include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
 
 fn main()
 {
@@ -19,10 +22,7 @@ fn main()
 
 fn new_uuid_handler(_: &mut Request) -> IronResult<Response>
 {
-    let uuid = Uuid::new_v4();
-    let uuid_string = &uuid.to_string();
-    let mut json_string = "{\"uuid\": \"".to_owned();
-    json_string.push_str(uuid_string);
-    json_string.push_str("\" }");
-    Ok(Response::with((status::Ok)))
+    let uuid_struct = UUID { uuid: Uuid::new_v4().to_string() };
+    let uuid_json = serde_json::to_string(&uuid_struct).unwrap();
+    Ok(Response::with((status::Ok, uuid_json)))
 }
