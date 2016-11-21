@@ -1,32 +1,15 @@
-[profile.dev]
-debug = true
-
 [package]
 name = "api"
 version = "0.0.1"
-authors = ["Vignesh Sankaran <developer@ferndrop.com>"]
+authors = ["Vignesh Sankaran <vignesh.sankaran@ferndrop.com>"]
 build = "build.rs"
 
-[lib]
-name = "prebuild"
-path = "prebuild.rs"
-
 [build-dependencies]
-serde_codegen = "0.8.10"
-syntex = { version = "0.44.0", optional = true }
-diesel_codegen_syntex = { version = "0.8.0", features = ["postgres"], optional = true }
+serde_codegen = "0.8.18"
 
 [dependencies]
-diesel = "= 0.8.0"
-diesel_codegen = { version = "0.8.0", features = ["postgres"], optional = true }
-dotenv = "= 0.8.0"
 iron = { version = "= 0.4.0", features = ["ssl"] }
 router = "= 0.4.0"
-serde = "= 0.8.10"
-serde_json = "= 0.8.2"
+serde = "= 0.8.18"
+serde_json = "= 0.8.3"
 uuid = { version = "= 0.3.1", features = ["v4"] }
-
-[features]
-default = ["nightly"]
-with-syntex = ["syntex", "diesel_codegen_syntex"]
-nightly = ["diesel/unstable", "diesel_codegen"]

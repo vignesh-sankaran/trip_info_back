@@ -4,7 +4,7 @@ RUN mkdir /rust
 WORKDIR /rust
 RUN curl https://sh.rustup.rs -s >> rustup.sh
 RUN chmod 755 /rust/rustup.sh
-RUN ./rustup.sh -y --default-toolchain 1.11.0
+RUN ./rustup.sh -y --default-toolchain 1.13.0
 ENV PATH=/root/.cargo/bin:$PATH SSL_VERSION=1.0.2g
 RUN mkdir /app
 WORKDIR /app
