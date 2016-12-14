@@ -1,0 +1,9 @@
+[package]
+name = "trip_info_db"
+version = "0.1.0"
+authors = ["Vignesh Sankaran <developer@sankaran.io>"]
+
+[dependencies]
+diesel = "=0.8.1"
+diesel_codegen = { version = "=0.8.0", features = ["postgres"], optional = true }
+dotenv = "=0.8.0"
