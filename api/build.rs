@@ -21,6 +21,7 @@ fn main()
 // Optimise this first if the build times start getting too long
 fn setup_local_ssl_macos()
 {
+    // Unlock the System keychain
     process::Command::new("security")
                     .arg("unlock-keychain")
                     .arg("-u")
@@ -73,6 +74,14 @@ fn setup_local_ssl_macos()
                     .output()
                     .expect("Failed to decrypt the private key");
                 
+    // Change the decrypted private key to be readonly
+    let mut permissions = metadata("./ssl/dec.pem").unwrap().permissions(); // Is there a safer way to do this?
+    permissions.set_readonly(true);
+    let result = set_permissions("./ssl/dec.pem", permissions);
+
+    // http://stackoverflow.com/questions/30320083/how-to-print-a-vec, credit to Matthieu M, retrieved on 28 Dec 2016
+    println!("Change permission of decrypted private key: {:?}", result);
+
     // Add the certificate into the System keychain
     runas::Command::new("security")
                     .arg("add-trusted-cert")
@@ -84,4 +93,11 @@ fn setup_local_ssl_macos()
                     .arg("./ssl/cert.pem")
                     .status()
                     .expect("Failed to add cert to keychain");
+
+    // Lock the System keychain once certificate has been inserted
+    process::Command::new("security")
+                    .arg("lock-keychain")
+                    .arg("/Library/Keychains/System.keychain")
+                    .output()
+                    .expect("Failed to lock System keychain");
 }
