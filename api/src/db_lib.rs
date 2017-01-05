@@ -1,5 +1,4 @@
 #![cfg_attr(feature = "dev-local-nightly", feature(proc_macro))]
-#![cfg_attr(feature = "dev-local-nightly", feature(custom_derive))]
 
 #[cfg(feature = "dev-local-nightly")]
 include!("db_lib.in.rs");
