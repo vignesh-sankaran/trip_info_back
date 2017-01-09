@@ -8,14 +8,18 @@ use std::process;
 
 fn main()
 {
-    #[cfg(any(feature = "dev-local-nightly", feature = "dev-local-stable"))]
+    extern crate diesel_codegen_syntex;
     setup_local_ssl_macos();
 
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let src = Path::new("src/serde_types.in.rs");
     let dst = Path::new(&out_dir).join("serde_types.rs");
-    
+
+    let src_diesel = Path::new("src/db_lib.in.rs");
+    let dst_diesel = Path::new(&out_dir).join("db_lib.rs");
+
     serde_codegen::expand(&src, &dst).unwrap();
+    diesel_codegen_syntex::expand(&src_diesel, &dst_diesel).unwrap();
 }
 
 // Optimise this first if the build times start getting too long

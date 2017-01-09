@@ -3,17 +3,17 @@ extern crate uuid;
 extern crate router;
 extern crate serde;
 extern crate serde_json;
-extern crate diesel;
-#[macro_use] extern crate diesel_codegen;
+extern crate dotenv;
+#[macro_use] extern crate diesel;
+
+mod db_lib;
 
 use std::path::PathBuf;
 use iron::prelude::*;
 use iron::status;
 use router::Router;
 use uuid::Uuid;
-use diesel::prelude::*;
-
-mod db_lib;
+use db_lib::*;
 
 include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
 
@@ -22,7 +22,7 @@ fn main()
     let mut router: Router = Router::new();
     router.get("/newUUID", new_uuid_handler, "newUUID");
 
-    let connection = establish_connection();
+    let _ = establish_connection();
     Iron::new(router).https("0.0.0.0:20000", PathBuf::from("./ssl/cert.pem"), PathBuf::from("./ssl/dec.pem")).unwrap();
 }
 

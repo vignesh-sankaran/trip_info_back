@@ -1,9 +1,4 @@
-#![cfg_attr(feature = "dev-local-nightly", feature(proc_macro))]
-
-#[cfg(feature = "dev-local-nightly")]
-include!("db_lib.in.rs");
-
-#[cfg(feature = "dev-local-stable")]
+//#![feature(proc_macro)]
 include!(concat!(env!("OUT_DIR"), "/db_lib.rs"));
 
 use std::env;
@@ -18,5 +13,5 @@ pub fn establish_connection() -> PgConnection
     dotenv().ok();
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url));
+    PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url))
 }
