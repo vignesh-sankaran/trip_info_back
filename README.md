@@ -17,4 +17,8 @@ Interface between mobile clients and other backend systems. All requests are mad
 * {Id}/Journey/Stop PUT: Stop journey
 
 ## DB
-Postgres was chosen for its performance, and the fact that it does graph storage and GIS handling.
+Postgres was chosen for its performance, and the fact that it does graph storage and GIS handling. 
+
+To run:
+* Make sure `postgres` is not running already, if it is, run `killall postgres` in macOS.
+* Run `docker build -t db:db ./ && docker run -p "5432:5432" db:db`.
