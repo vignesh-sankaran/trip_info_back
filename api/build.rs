@@ -11,10 +11,12 @@ fn main()
     extern crate diesel_codegen_syntex;
     setup_local_ssl_macos();
 
+    // Codegen for Serde
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let src = Path::new("src/serde_types.in.rs");
     let dst = Path::new(&out_dir).join("serde_types.rs");
 
+    // Codegen for Diesel
     let src_diesel = Path::new("src/db_lib.in.rs");
     let dst_diesel = Path::new(&out_dir).join("db_lib.rs");
 
