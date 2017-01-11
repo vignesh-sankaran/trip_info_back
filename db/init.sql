@@ -4,11 +4,11 @@ CREATE DATABASE trip_info;
 \connect trip_info
 
 CREATE TABLE user_info (
-	uuid text PRIMARY KEY,
-	home_address_text text,
-	home_address_lat text,
-	home_address_long text,
-	destination_address_text text,
-	destination_address_lat text,
-	destination_address_long text
+	uuid text PRIMARY KEY not null,
+	home_address_text text not null DEFAULT '',
+	home_address_lat text not null DEFAULT '',
+	home_address_long text not null DEFAULT '',
+	destination_address_text text not null DEFAULT '',
+	destination_address_lat text not null DEFAULT '',
+	destination_address_long text not null DEFAULT ''
 );
