@@ -43,3 +43,16 @@ pub fn update_user_home<'a>(conn: &PgConnection, a_uuid: &'a str, a_home_address
         .get_result::<UserInfo>(conn)
         .expect(&format!("Unable to update home details for uuid {}", a_uuid))
 }
+
+pub fn update_user_destination<'a>(conn: &PgConnection, a_uuid: &'a str, a_destination_address_text: &'a str,
+                                    a_destination_address_lat: &'a str, a_destination_address_long: &'a str) -> UserInfo
+{
+    use self::schema::user_info::dsl::{user_info, destination_address_text, destination_address_lat, destination_address_long};
+
+    update(user_info.find(a_uuid))
+        .set((destination_address_text.eq(a_destination_address_text),
+            destination_address_lat.eq(a_destination_address_lat),
+            destination_address_long.eq(a_destination_address_long)))
+        .get_result::<UserInfo>(conn)
+        .expect(&format!("Unable to update destination details for uuid {}", a_uuid))
+}
