@@ -8,12 +8,12 @@ A collection of systems which serve as the backend for Trip Info. It currently c
 Interface between mobile clients and other backend systems. All requests are made in HTTPS. The endpoints are as follows:
 
 * NewUUID GET: Generate a unique identifier for each device, assuming 1 device per user
-* {Id}/Pedometer POST: Pass all historical pedometer to DB
-* {Id}/Pedometer PUT: Add new pedometer record at 12am
-* {Id}/Journey/Home POST: Pass in home address and chosen PT stop
-* {Id}/Journey/Destination POST: Pass in destination type, destination address and chosen PT stop
-* {Id}/Journey/Start PUT: Start journey
-* {Id}/Journey/Stop PUT: Stop journey
+* Pedometer POST: Pass all historical pedometer to DB
+* Pedometer PUT: Add new pedometer record at 12am
+* Journey/Home POST: Pass in home address and chosen PT stop
+* Journey/Destination POST: Pass in destination type, destination address and chosen PT stop
+* Journey/Start PUT: Start journey
+* Journey/Stop PUT: Stop journey
 
 ## DB
 Postgres was chosen for its performance, and the fact that it does graph storage and GIS handling. 
