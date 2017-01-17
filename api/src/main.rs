@@ -46,8 +46,9 @@ fn journey_home_init(req: &mut Request) -> IronResult<Response>
     req.body.read_to_string(&mut post_body_raw).unwrap();
     let post_body_struct: HomeInfoAdd = serde_json::from_str(post_body_raw.trim()).unwrap(); // Need to define the struct prior to serde deserialise
     // This need to be handled to throw a 500 error if this fails
-    let _ = update_user_home(&connection, post_body_struct.uuid.trim(), post_body_struct.home_address_text.trim(),
-                                post_body_struct.home_address_lat.trim(), post_body_struct.home_address_long.trim());
+    // Also, dereferencing String goes to &str, there's a StackOverflow link somewhere...
+    let _ = update_user_home(&connection, &post_body_struct.uuid, &post_body_struct.home_address_text,
+                                &post_body_struct.home_address_lat, &post_body_struct.home_address_long);
     Ok(Response::with((status::Ok)))
 }
 
