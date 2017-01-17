@@ -73,9 +73,11 @@ mod test
 
     include!(concat!(env!("OUT_DIR"), "/db_lib.rs"));
 
+    static UUID_STRING: &'static str = "87265ef6-cf83-4e66-8f85-fc54fbb38de9";
+
     // Helper DB connection method. 
     // Don't want to rely on an external function that is also being unit tested
-    fn connection() -> PgConnection
+    fn db_connection() -> PgConnection
     {
         use std::env;
         use dotenv::dotenv;
@@ -97,21 +99,33 @@ mod test
     #[test]
     fn test_create_new_user()
     {
-        let db_conn = connection();
-        let uuid_string = "87265ef6-cf83-4e66-8f85-fc54fbb38de9";
-        
-        let result = super::create_new_user(&db_conn, &uuid_string);
-        // Get the last row, check the uuid of that last row against what we have here
-
         use self::schema::user_info::dsl::{user_info, uuid};
         use diesel::*;
+        
+        let db_conn = db_connection();
 
-        let result = user_info.filter(uuid.eq("87265ef6-cf83-4e66-8f85-fc54fbb38de9"))
+        let old_results = user_info.filter(uuid.eq(UUID_STRING))
             .limit(1)
             .load::<self::models::UserInfo>(&db_conn)
             .expect("Couldn't load up the db");
-                
-        assert!(result.last().unwrap().uuid == uuid_string);
+        
+        // If the UUID string already exists, delete all records with it
+        if old_results.len() != 0
+        {
+            let _ = diesel::delete(user_info.filter(uuid.like(format!("%{}%", UUID_STRING))))
+            .execute(&db_conn)
+            .expect("Failed to delete records with old UUID");
+        }
+        
+        let _ = super::create_new_user(&db_conn, UUID_STRING);
+
+        // Get the last row, check the uuid of that last row against what we have here
+        let new_record = user_info.filter(uuid.eq(UUID_STRING))
+            .limit(1)
+            .load::<self::models::UserInfo>(&db_conn)
+            .expect("Couldn't load up the db");
+                        
+        assert!(new_record.last().unwrap().uuid == UUID_STRING);
     }
 
     #[test]
