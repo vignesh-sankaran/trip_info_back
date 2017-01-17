@@ -72,12 +72,13 @@ mod test
     use diesel::pg::PgConnection;
 
     include!(concat!(env!("OUT_DIR"), "/db_lib.rs"));
+    include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
 
     static UUID_STRING: &'static str = "87265ef6-cf83-4e66-8f85-fc54fbb38de9";
 
     // Helper DB connection method. 
     // Don't want to rely on an external function that is also being unit tested
-    fn db_connection() -> PgConnection
+    fn helper_db_connection() -> PgConnection
     {
         use std::env;
         use dotenv::dotenv;
@@ -90,9 +91,23 @@ mod test
         PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url))
     }
 
+    fn helper_delete_user()
+    {
+        use self::schema::user_info::dsl::{user_info, uuid};
+        use diesel::*;
+        
+        // See if we can pass this in instead
+        let db_conn = helper_db_connection();
+
+        let _ = diesel::delete(user_info.filter(uuid.like(format!("%{}%", UUID_STRING))))
+            .execute(&db_conn)
+            .expect("Failed to delete records with old UUID");
+    }
+   
     #[test]
     fn test_db_connection()
     {
+        // Find a way to test if the result of the connection is true or false
         assert!(true);
     }
 
@@ -102,26 +117,15 @@ mod test
         use self::schema::user_info::dsl::{user_info, uuid};
         use diesel::*;
         
-        let db_conn = db_connection();
+        let db_conn = helper_db_connection();
 
-        let old_results = user_info.filter(uuid.eq(UUID_STRING))
-            .limit(1)
-            .load::<self::models::UserInfo>(&db_conn)
-            .expect("Couldn't load up the db");
-        
         // If the UUID string already exists, delete all records with it
-        if old_results.len() != 0
-        {
-            let _ = diesel::delete(user_info.filter(uuid.like(format!("%{}%", UUID_STRING))))
-            .execute(&db_conn)
-            .expect("Failed to delete records with old UUID");
-        }
-        
+        helper_delete_user();
+
         let _ = super::create_new_user(&db_conn, UUID_STRING);
 
         // Get the last row, check the uuid of that last row against what we have here
         let new_record = user_info.filter(uuid.eq(UUID_STRING))
-            .limit(1)
             .load::<self::models::UserInfo>(&db_conn)
             .expect("Couldn't load up the db");
                         
