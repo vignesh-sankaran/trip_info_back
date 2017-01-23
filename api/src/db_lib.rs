@@ -64,17 +64,23 @@ pub fn update_user_destination<'a>(conn: &PgConnection, a_uuid: &'a str, a_desti
 #[cfg(test)]
 mod test
 {
+
+    include!(concat!(env!("OUT_DIR"), "/db_lib.rs"));
+    include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
+
     extern crate diesel;
     extern crate dotenv;
     extern crate serde;
     extern crate serde_json;
 
     use diesel::pg::PgConnection;
-
-    include!(concat!(env!("OUT_DIR"), "/db_lib.rs"));
-    include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
+    use std::sync::Mutex;
 
     static UUID_STRING: &'static str = "87265ef6-cf83-4e66-8f85-fc54fbb38de9";
+
+    lazy_static! {   
+        static ref MUTEX: Mutex<()> = Mutex::new(());
+    }
 
     // Helper DB connection method. 
     // Don't want to rely on an external function that is also being unit tested
@@ -103,6 +109,23 @@ mod test
             .execute(&db_conn)
             .expect("Failed to delete records with old UUID");
     }
+
+    fn helper_create_user(conn: &PgConnection)
+    {
+        use self::schema::user_info;
+        use diesel::insert;
+        use diesel::prelude::*;
+        use self::models::{UserInfo, NewUser};
+
+        let new_user = NewUser
+        {
+            uuid: UUID_STRING,
+        };
+
+        let _: UserInfo = insert(&new_user).into(user_info::table)
+            .get_result(conn)
+            .expect("Error inserting new user into user_info DB");
+    }
    
     #[test]
     fn test_db_connection()
@@ -120,6 +143,7 @@ mod test
         let db_conn = helper_db_connection();
 
         // If the UUID string already exists, delete all records with it
+
         helper_delete_user();
 
         let _ = super::create_new_user(&db_conn, UUID_STRING);
@@ -133,9 +157,36 @@ mod test
     }
 
     #[test]
+    #[ignore] // At least until we set up blocking DB access
     fn test_update_user_home()
     {
-        assert!(true);
+        use self::schema::user_info::dsl::{user_info, uuid}; 
+        use diesel::*;
+
+        let db_conn = helper_db_connection();
+
+        {
+            MUTEX.lock();
+            helper_delete_user();
+            helper_create_user(&db_conn);
+        }
+
+        let db_conn = helper_db_connection();
+        let home_address_text_string = "100 Bogong Avenue, Glen Waverley VIC 3150";
+        let home_address_lat_string = "-37";
+        let home_address_long_string = "142";
+
+        let _ = super::update_user_home(&db_conn, UUID_STRING, &home_address_text_string, &home_address_lat_string, &home_address_long_string);
+
+        let last_entry_raw = user_info.filter(uuid.eq(UUID_STRING))
+            .load::<self::models::UserInfo>(&db_conn)
+            .expect("Couldn't load up the db");
+
+        let last_entry = last_entry_raw.last().unwrap();
+
+        assert!(last_entry.home_address_text == home_address_text_string);
+        assert!(last_entry.home_address_lat == home_address_lat_string);
+        assert!(last_entry.home_address_long == home_address_long_string);
     }
 
     #[test]

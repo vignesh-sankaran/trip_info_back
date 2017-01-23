@@ -16,6 +16,9 @@ diesel_codegen_syntex = { version = "0.9.0", features = ["postgres"] }
 serde_codegen = "0.8.21"
 runas = "0.1.1"
 
+[dev-dependencies]
+hyper = "0.10.0"
+
 [dependencies]
 iron = { version = "0.4.0", features = ["ssl"] }
 router = "0.4.0"
@@ -24,3 +27,6 @@ serde = "0.8.21"
 serde_json = "0.8.4"
 diesel = "0.9.1"
 dotenv = "0.8.0"
+
+[dependencies.lazy_static]
+git = "https://github.com/rust-lang-nursery/lazy-static.rs"
