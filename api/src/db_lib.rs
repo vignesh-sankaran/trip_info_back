@@ -117,13 +117,6 @@ mod test
     }
    
     #[test]
-    fn test_db_connection()
-    {
-        // Find a way to test if the result of the connection is true or false
-        assert!(true);
-    }
-
-    #[test]
     fn test_create_new_user()
     {
         use self::schema::user_info::dsl::{user_info, uuid};
@@ -131,10 +124,6 @@ mod test
         
         let uuid_string = "090ea3e2-5f2e-4c9a-9a83-c23f27d959a2";
         let db_conn = helper_db_connection();
-
-        // If the UUID string already exists, delete all records with it
-
-        helper_delete_user(&db_conn, uuid_string);
 
         let _ = super::create_new_user(&db_conn, uuid_string);
 
@@ -144,6 +133,9 @@ mod test
             .expect("Couldn't load up the db");
                         
         assert!(new_record.last().unwrap().uuid == uuid_string);
+
+        // Clean up
+        helper_delete_user(&db_conn, uuid_string);
     }
 
     #[test]
@@ -155,8 +147,6 @@ mod test
         let uuid_string = "64b167fe-9069-4b1a-be2d-b20cfd87b263";
         let db_conn = helper_db_connection();
 
-        // Recreate record if already existing in DB
-        helper_delete_user(&db_conn, uuid_string);
         helper_create_user(&db_conn, uuid_string);
 
         let db_conn = helper_db_connection();
@@ -175,6 +165,9 @@ mod test
         assert!(last_entry.home_address_text == home_address_text_string);
         assert!(last_entry.home_address_lat == home_address_lat_string);
         assert!(last_entry.home_address_long == home_address_long_string);
+
+        // Clean up
+        helper_delete_user(&db_conn, uuid_string);
     }
 
     #[test]
@@ -186,8 +179,6 @@ mod test
         let uuid_string = "87265ef6-cf83-4e66-8f85-fc54fbb38de9";
         let db_conn = helper_db_connection();
 
-        // Recreate record if already existing in DB
-        helper_delete_user(&db_conn, uuid_string);
         helper_create_user(&db_conn, uuid_string);
 
         let destination_address_text_string = "141 Bourke Street, Melbourne VIC 3000";
@@ -203,5 +194,6 @@ mod test
         let last_entry = last_entry_raw.last().unwrap();
 
         assert!(last_entry.destination_address_text == destination_address_text_string);
+        helper_delete_user(&db_conn, uuid_string);
     }
 }
