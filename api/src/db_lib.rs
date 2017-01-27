@@ -64,7 +64,6 @@ pub fn update_user_destination<'a>(conn: &PgConnection, a_uuid: &'a str, a_desti
 #[cfg(test)]
 mod test
 {
-
     include!(concat!(env!("OUT_DIR"), "/db_lib.rs"));
     include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
 
@@ -74,13 +73,6 @@ mod test
     extern crate serde_json;
 
     use diesel::pg::PgConnection;
-    use std::sync::Mutex;
-
-    static UUID_STRING: &'static str = "87265ef6-cf83-4e66-8f85-fc54fbb38de9";
-
-    lazy_static! {   
-        static ref MUTEX: Mutex<()> = Mutex::new(());
-    }
 
     // Helper DB connection method. 
     // Don't want to rely on an external function that is also being unit tested
@@ -89,7 +81,6 @@ mod test
         use std::env;
         use dotenv::dotenv;
         use diesel::prelude::*;
-        use diesel::pg::PgConnection;
 
         dotenv().ok();
 
@@ -97,7 +88,7 @@ mod test
         PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url))
     }
 
-    fn helper_delete_user()
+    fn helper_delete_user(uuid_string: &str)
     {
         use self::schema::user_info::dsl::{user_info, uuid};
         use diesel::*;
@@ -105,12 +96,13 @@ mod test
         // See if we can pass this in instead
         let db_conn = helper_db_connection();
 
-        let _ = diesel::delete(user_info.filter(uuid.like(format!("%{}%", UUID_STRING))))
+        let _ = PgConnection::establish("postgres://postgres@localhost/trip_info").unwrap();
+        let _ = diesel::delete(user_info.filter(uuid.like(format!("%{}%", uuid_string))))
             .execute(&db_conn)
             .expect("Failed to delete records with old UUID");
     }
 
-    fn helper_create_user(conn: &PgConnection)
+    fn helper_create_user(conn: &PgConnection, uuid_string: &str)
     {
         use self::schema::user_info;
         use diesel::insert;
@@ -119,7 +111,7 @@ mod test
 
         let new_user = NewUser
         {
-            uuid: UUID_STRING,
+            uuid: uuid_string,
         };
 
         let _: UserInfo = insert(&new_user).into(user_info::table)
@@ -140,45 +132,43 @@ mod test
         use self::schema::user_info::dsl::{user_info, uuid};
         use diesel::*;
         
+        let uuid_string = "090ea3e2-5f2e-4c9a-9a83-c23f27d959a2";
         let db_conn = helper_db_connection();
 
         // If the UUID string already exists, delete all records with it
 
-        helper_delete_user();
+        helper_delete_user(uuid_string);
 
-        let _ = super::create_new_user(&db_conn, UUID_STRING);
+        let _ = super::create_new_user(&db_conn, uuid_string);
 
         // Get the last row, check the uuid of that last row against what we have here
-        let new_record = user_info.filter(uuid.eq(UUID_STRING))
+        let new_record = user_info.filter(uuid.eq(uuid_string))
             .load::<self::models::UserInfo>(&db_conn)
             .expect("Couldn't load up the db");
                         
-        assert!(new_record.last().unwrap().uuid == UUID_STRING);
+        assert!(new_record.last().unwrap().uuid == uuid_string);
     }
 
     #[test]
-    #[ignore] // At least until we set up blocking DB access
     fn test_update_user_home()
     {
         use self::schema::user_info::dsl::{user_info, uuid}; 
         use diesel::*;
 
+        let uuid_string = "64b167fe-9069-4b1a-be2d-b20cfd87b263";
         let db_conn = helper_db_connection();
 
-        {
-            MUTEX.lock();
-            helper_delete_user();
-            helper_create_user(&db_conn);
-        }
+        helper_delete_user(uuid_string);
+        helper_create_user(&db_conn, uuid_string);
 
         let db_conn = helper_db_connection();
         let home_address_text_string = "100 Bogong Avenue, Glen Waverley VIC 3150";
         let home_address_lat_string = "-37";
         let home_address_long_string = "142";
 
-        let _ = super::update_user_home(&db_conn, UUID_STRING, &home_address_text_string, &home_address_lat_string, &home_address_long_string);
+        let _ = super::update_user_home(&db_conn, uuid_string, &home_address_text_string, &home_address_lat_string, &home_address_long_string);
 
-        let last_entry_raw = user_info.filter(uuid.eq(UUID_STRING))
+        let last_entry_raw = user_info.filter(uuid.eq(uuid_string))
             .load::<self::models::UserInfo>(&db_conn)
             .expect("Couldn't load up the db");
 
@@ -192,6 +182,7 @@ mod test
     #[test]
     fn test_update_user_destination()
     {
+        let _ = "87265ef6-cf83-4e66-8f85-fc54fbb38de9";
         assert!(true);
     }
 }
