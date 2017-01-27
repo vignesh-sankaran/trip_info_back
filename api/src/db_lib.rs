@@ -88,17 +88,14 @@ mod test
         PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url))
     }
 
-    fn helper_delete_user(uuid_string: &str)
+    // See if we can find a way to pass the DB connection in rather than creating a new one here
+    fn helper_delete_user(conn: &PgConnection, uuid_string: &str)
     {
         use self::schema::user_info::dsl::{user_info, uuid};
         use diesel::*;
         
-        // See if we can pass this in instead
-        let db_conn = helper_db_connection();
-
-        let _ = PgConnection::establish("postgres://postgres@localhost/trip_info").unwrap();
         let _ = diesel::delete(user_info.filter(uuid.like(format!("%{}%", uuid_string))))
-            .execute(&db_conn)
+            .execute(conn)
             .expect("Failed to delete records with old UUID");
     }
 
@@ -137,7 +134,7 @@ mod test
 
         // If the UUID string already exists, delete all records with it
 
-        helper_delete_user(uuid_string);
+        helper_delete_user(&db_conn, uuid_string);
 
         let _ = super::create_new_user(&db_conn, uuid_string);
 
@@ -158,7 +155,7 @@ mod test
         let uuid_string = "64b167fe-9069-4b1a-be2d-b20cfd87b263";
         let db_conn = helper_db_connection();
 
-        helper_delete_user(uuid_string);
+        helper_delete_user(&db_conn, uuid_string);
         helper_create_user(&db_conn, uuid_string);
 
         let db_conn = helper_db_connection();
