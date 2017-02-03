@@ -4,12 +4,11 @@ extern crate uuid;
 extern crate serde;
 extern crate serde_json;
 extern crate dotenv;
+extern crate hyper_native_tls;
 #[macro_use] extern crate diesel;
-#[macro_use] extern crate lazy_static;
 
 mod db_lib;
 
-use std::path::PathBuf;
 use std::io::Read;
 use iron::prelude::*;
 use iron::status;
@@ -26,7 +25,9 @@ fn main()
     router.post("/journey/home", journey_home_init, "home_post");
     router.post("/journey/destination", journey_destination_init, "destination_post");
 
-    Iron::new(router).https("0.0.0.0:20000", PathBuf::from("./ssl/cert.pem"), PathBuf::from("./ssl/dec.pem")).unwrap();
+    let ssl_config = hyper_native_tls::NativeTlsServer::new("./ssl/identity.p12", "testpass").unwrap();
+
+    Iron::new(router).https("0.0.0.0:20000", ssl_config).unwrap();
 }
 
 fn new_uuid_handler(_: &mut Request) -> IronResult<Response>
@@ -58,7 +59,8 @@ fn journey_destination_init(req: &mut Request) -> IronResult<Response>
     let connection = establish_connection();
     let mut req_raw = String::new();
     req.body.read_to_string(&mut req_raw).unwrap();
-    let req_struct: DestinationInfoAdd = serde_json::from_str(req_raw.trim()).unwrap(); // Need to define the struct prior to serde deserialise
+    // Need to define the struct prior to serde deserialise
+    let req_struct: DestinationInfoAdd = serde_json::from_str(req_raw.trim()).unwrap();
     let _ = update_user_destination(&connection, req_struct.uuid.trim(), req_struct.destination_address_text.trim(),
                                     req_struct.destination_address_lat.trim(), req_struct.destination_address_long.trim());
     Ok(Response::with((status::Ok)))

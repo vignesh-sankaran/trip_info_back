@@ -46,7 +46,6 @@ fn setup_local_ssl_macos()
                      .expect("Unable to delete certificate");
         
         remove_dir_all(Path::new("./ssl")).expect("Unable to delete ssl directory");
-
     }
 
     create_dir("./ssl/").expect("Unable to create new ssl directory");
@@ -69,6 +68,22 @@ fn setup_local_ssl_macos()
                     .arg("/C=AU/ST=Victoria/L=Melbourne/O=Ferndrop Pty Ltd/OU=org/CN=localhost")
                     .output()
                     .expect("Failed to create ssl key and certificate");
+    
+    // Combine certificate and private key into one identity
+    process::Command::new("openssl")
+                    .current_dir("./ssl/")
+                    .arg("pkcs12")
+                    .arg("-export")
+                    .arg("-out")
+                    .arg("identity.p12")
+                    .arg("-inkey")
+                    .arg("key.pem")
+                    .arg("-in")
+                    .arg("cert.pem")
+                    .arg("-passout")
+                    .arg("pass:testpass")
+                    .output()
+                    .expect("Failed to create a new identity");
     
     // Decrypt the ssl key
     process::Command::new("openssl")
@@ -99,6 +114,18 @@ fn setup_local_ssl_macos()
                     .arg("./ssl/cert.pem")
                     .status()
                     .expect("Failed to add cert to keychain");
+
+    runas::Command::new("security")
+                    .arg("import")
+                    .arg("./ssl/identity.p12")
+                    .arg("-t")
+                    .arg("agg")
+                    .arg("-k")
+                    .arg("/Library/Keychains/System.keychain")
+                    .arg("-P")
+                    .arg("testpass")
+                    .status()
+                    .expect("Failed to add identity to keychain");
 
     // Lock the System keychain once certificate has been inserted
     process::Command::new("security")
