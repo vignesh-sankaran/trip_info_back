@@ -1,11 +1,11 @@
 extern crate hyper;
-extern crate hyper_native_tls;
+extern crate hyper_openssl;
 extern crate openssl;
 extern crate diesel;
 
 use hyper::Client;
 use hyper::net::HttpsConnector;
-use hyper_native_tls::NativeTlsClient;
+use openssl::ssl::*;
 
 #[test]
 fn test_new_uuid()
@@ -13,17 +13,29 @@ fn test_new_uuid()
     let mut url = hyper::Url::parse("https://127.0.0.1/newUUID").unwrap();
     let _ = url.set_port(Some(20000));
 
-    // Create OpenSSL context to disable certificate verification
-    let openssl_settings = openssl::ssl::SslContextBuilder::new(openssl::ssl::SslMethod::tls());
+    let mut ssl_connector_builder = SslConnectorBuilder::new(SslMethod::tls()).unwrap();
+    {
+        let mut ssl_context_builder = ssl_connector_builder.builder_mut();
+        
+        let _ = ssl_context_builder.set_ca_file("./ssl/cert.pem");
+        let result = ssl_context_builder.set_private_key_file("./ssl/dec.pem", openssl::x509::X509_FILETYPE_PEM);
 
-    let tls = NativeTlsClient::new().unwrap();
-    let connector = HttpsConnector::new(tls);
+        match result
+        {
+            Ok(result) => println!("This worked!"),
+            Err(result) => panic!("{}", result.errors().first().unwrap().reason().unwrap()),
+        }
+    }
+    let ssl_connector = ssl_connector_builder.build();
+
+    let openssl_client = hyper_openssl::OpensslClient::new().unwrap();
+    openssl_client.danger_disable_hostname_verification(true);
+    let connector = HttpsConnector::new(openssl_client);
     let client = Client::with_connector(connector);
 
     let response = client.get(url).send();
 
     assert!(response.unwrap().status == hyper::status::StatusCode::Ok);
-    // Re enable certificate verification
 }
 
 #[test]
