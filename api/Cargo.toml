@@ -20,7 +20,6 @@ runas = "0.1.1"
 hyper = "0.10.4"
 hyper-openssl = { git = "https://github.com/sfackler/hyper-openssl.git" } 
 openssl = "0.9.6"
-hyper-openssl = "0.2.2"
 
 [dependencies]
 iron = "0.5.*"

@@ -3,6 +3,7 @@ extern crate hyper_openssl;
 extern crate openssl;
 extern crate diesel;
 
+use std::io::Read;
 use hyper::Client;
 use hyper::net::HttpsConnector;
 use openssl::ssl::*;
@@ -13,21 +14,24 @@ fn test_new_uuid()
     let mut url = hyper::Url::parse("https://127.0.0.1/newUUID").unwrap();
     let _ = url.set_port(Some(20000));
 
-    // Use pkcs12 module in openssl to parse it and pass into ssl context builder
+    let mut identity_file = std::fs::File::open("./ssl/identity.p12").unwrap();
+    let mut pkcs12 = vec![];
+    identity_file.read_to_end(&mut pkcs12).unwrap();
+    let pkcs12 = openssl::pkcs12::Pkcs12::from_der(&pkcs12).unwrap();
+    let identity = pkcs12.parse("testpass").unwrap();
+
     let mut ssl_connector_builder = SslConnectorBuilder::new(SslMethod::tls()).unwrap();
     {
-        let mut ssl_context_builder = ssl_connector_builder.builder_mut();
+    let mut ssl_context_builder = ssl_connector_builder.builder_mut();
         ssl_context_builder.set_verify(SSL_VERIFY_NONE);
-        let _ = ssl_context_builder.set_ca_file("./ssl/cert.pem").unwrap();
-        let result = ssl_context_builder.set_private_key_file("./ssl/dec.pem", openssl::x509::X509_FILETYPE_PEM);
-
-        match result
-        {
-            Ok(result) => println!("This worked!"),
-            Err(result) => panic!("{}", result.errors().first().unwrap().reason().unwrap()),
-        }
+        let _ = ssl_context_builder.set_certificate(&identity.cert);
+        let _ = ssl_context_builder.set_private_key(&identity.pkey);
     }
-    openssl_client.danger_disable_hostname_verification(true);
+    let ssl_connector = ssl_connector_builder.build();
+    let mut openssl_client = hyper_openssl::OpensslClient::from(ssl_connector);
+    {
+        openssl_client.danger_disable_hostname_verification(true);
+    }
     let connector = HttpsConnector::new(openssl_client);
     let client = Client::with_connector(connector);
 
