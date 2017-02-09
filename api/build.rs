@@ -1,3 +1,4 @@
+extern crate openssl;
 extern crate serde_codegen;
 extern crate runas;
 
@@ -9,6 +10,7 @@ use std::process;
 fn main()
 {
     extern crate diesel_codegen_syntex;
+    
     setup_local_ssl_macos();
 
     // Codegen for Serde
@@ -24,7 +26,21 @@ fn main()
     diesel_codegen_syntex::expand(&src_diesel, &dst_diesel).unwrap();
 }
 
-// Optimise this first if the build times start getting too long
+fn check_cert_expiry_macos() -> bool
+{
+    // Read certs
+    if Path::new("./ssl").exists()
+    {
+        let mut identity_file = std::fs::File::open("./ssl/identity.p12").unwrap();
+        let mut pkcs12 = vec![];
+        identity_file.read_to_end(&mut pkcs12).unwrap();
+        let pkcs12 = openssl::pkcs12::Pkcs12::from_der(&pkcs12).unwrap();
+        let identity = pkcs12.parse("testpass").unwrap();
+
+        // Get certificate notAfter, output the date format, input into Rust's time crate and compare against now
+    }
+}
+
 fn setup_local_ssl_macos()
 {
     // Unlock the System keychain

@@ -22,8 +22,9 @@ fn test_new_uuid()
 
     let mut ssl_connector_builder = SslConnectorBuilder::new(SslMethod::tls()).unwrap();
     {
-    let mut ssl_context_builder = ssl_connector_builder.builder_mut();
+        let mut ssl_context_builder = ssl_connector_builder.builder_mut();
         ssl_context_builder.set_verify(SSL_VERIFY_NONE);
+        let result = ssl_context_builder.set_cert(&identity.cert);
         let _ = ssl_context_builder.set_private_key(&identity.pkey);
 
         match result
