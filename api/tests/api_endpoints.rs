@@ -24,8 +24,13 @@ fn test_new_uuid()
     {
     let mut ssl_context_builder = ssl_connector_builder.builder_mut();
         ssl_context_builder.set_verify(SSL_VERIFY_NONE);
-        let _ = ssl_context_builder.set_certificate(&identity.cert);
         let _ = ssl_context_builder.set_private_key(&identity.pkey);
+
+        match result
+        {
+            Ok(result) => println!("This worked!"),
+            Err(result) => panic!("{}", result.errors().first().unwrap().reason().unwrap()),
+        }
     }
     let ssl_connector = ssl_connector_builder.build();
     let mut openssl_client = hyper_openssl::OpensslClient::from(ssl_connector);
