@@ -2,7 +2,7 @@
 debug = true
 
 [package]
-name = "api"
+name = "trip_info_api"
 version = "0.0.1"
 authors = ["Vignesh Sankaran <developer@ferndrop.com>"]
 build = "build.rs"
@@ -15,12 +15,13 @@ path = "prebuild.rs"
 diesel_codegen_syntex = { version = "0.9.0", features = ["postgres"] }
 serde_codegen = "0.8.21"
 runas = "0.1.1"
-openssl = "0.9.6"
+openssl = "0.9.*"
+time = "0.1.*"
 
 [dev-dependencies]
-hyper = "0.10.4"
+hyper = "0.10.*"
 hyper-openssl = { git = "https://github.com/sfackler/hyper-openssl.git" } 
-openssl = "0.9.6"
+openssl = "0.9.*"
 
 [dependencies]
 iron = "0.5.*"

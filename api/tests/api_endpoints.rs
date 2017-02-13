@@ -9,8 +9,7 @@ use hyper::net::HttpsConnector;
 use openssl::ssl::*;
 
 #[test]
-fn test_new_uuid()
-{    
+fn test_new_uuid() {
     let mut url = hyper::Url::parse("https://127.0.0.1/newUUID").unwrap();
     let _ = url.set_port(Some(20000));
 
@@ -24,12 +23,11 @@ fn test_new_uuid()
     {
         let mut ssl_context_builder = ssl_connector_builder.builder_mut();
         ssl_context_builder.set_verify(SSL_VERIFY_NONE);
-        let result = ssl_context_builder.set_cert(&identity.cert);
+        let result = ssl_context_builder.set_certificate(&identity.cert);
         let _ = ssl_context_builder.set_private_key(&identity.pkey);
 
-        match result
-        {
-            Ok(result) => println!("This worked!"),
+        match result {
+            Ok(_) => println!("This worked!"),
             Err(result) => panic!("{}", result.errors().first().unwrap().reason().unwrap()),
         }
     }
@@ -47,13 +45,11 @@ fn test_new_uuid()
 }
 
 #[test]
-fn test_add_user_home()
-{
+fn test_add_user_home() {
     assert!(true);
 }
 
 #[test]
-fn test_add_user_destination()
-{
+fn test_add_user_destination() {
     assert!(true);
 }

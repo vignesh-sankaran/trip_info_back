@@ -9,7 +9,7 @@ pub struct UserInfo
 	pub home_address_long: String,
 	pub destination_address_text: String,
 	pub destination_address_lat: String,
-	pub destination_address_long: String, 
+	pub destination_address_long: String,
 }
 
 #[derive(Insertable)]

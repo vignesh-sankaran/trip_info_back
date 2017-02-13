@@ -1,17 +1,20 @@
 extern crate openssl;
 extern crate serde_codegen;
 extern crate runas;
+extern crate time;
 
 use std::env;
 use std::path::Path;
 use std::fs::*;
 use std::process;
+use std::io::Read;
 
-fn main()
-{
+fn main() {
     extern crate diesel_codegen_syntex;
-    
-    setup_local_ssl_macos();
+
+    if check_cert_expiry_macos() {
+        setup_local_ssl_macos();
+    }
 
     // Codegen for Serde
     let out_dir = env::var_os("OUT_DIR").unwrap();
@@ -26,41 +29,45 @@ fn main()
     diesel_codegen_syntex::expand(&src_diesel, &dst_diesel).unwrap();
 }
 
-fn check_cert_expiry_macos() -> bool
-{
+fn check_cert_expiry_macos() -> bool {
     // Read certs
-    if Path::new("./ssl").exists()
-    {
+    if Path::new("./ssl").exists() {
         let mut identity_file = std::fs::File::open("./ssl/identity.p12").unwrap();
         let mut pkcs12 = vec![];
         identity_file.read_to_end(&mut pkcs12).unwrap();
         let pkcs12 = openssl::pkcs12::Pkcs12::from_der(&pkcs12).unwrap();
         let identity = pkcs12.parse("testpass").unwrap();
 
-        // Get certificate notAfter, output the date format, input into Rust's time crate and compare against now
+        let not_after_string = identity.cert.not_after().to_string();
+        // Reference for date time parsing: http://www.cplusplus.com/reference/ctime/strftime/
+        let not_after_time = time::strptime(&not_after_string, "%b %d %H:%M:%S %Y %Z").unwrap();
+
+        if time::now() < not_after_time {
+            // Looks like operator overloading can be done in Rust too :)
+            return false;
+        }
     }
+    return true;
 }
 
-fn setup_local_ssl_macos()
-{
+fn setup_local_ssl_macos() {
     // Unlock the System keychain
     process::Command::new("security")
-                    .arg("unlock-keychain")
-                    .arg("-u")
-                    .arg("/Library/Keychains/System.keychain")
-                    .output()
-                    .expect("Failed to unlock login keychain");
+        .arg("unlock-keychain")
+        .arg("-u")
+        .arg("/Library/Keychains/System.keychain")
+        .output()
+        .expect("Failed to unlock login keychain");
 
     // Delete all certs inside ssl directory if it exists
-    if Path::new("./ssl").exists()
-    {
+    if Path::new("./ssl").exists() {
         runas::Command::new("security")
-                     .arg("delete-certificate")
-                     .arg("-c")
-                     .arg("localhost")
-                     .status()
-                     .expect("Unable to delete certificate");
-        
+            .arg("delete-certificate")
+            .arg("-c")
+            .arg("localhost")
+            .status()
+            .expect("Unable to delete certificate");
+
         remove_dir_all(Path::new("./ssl")).expect("Unable to delete ssl directory");
     }
 
@@ -68,49 +75,49 @@ fn setup_local_ssl_macos()
 
     // Create new ssl key and certificate
     process::Command::new("openssl")
-                    .current_dir("./ssl/")
-                    .arg("req")
-                    .arg("-x509")
-                    .arg("-newkey")
-                    .arg("rsa:4096")
-                    .arg("-keyout")
-                    .arg("key.pem")
-                    .arg("-out")
-                    .arg("cert.pem")
-                    .arg("-days")
-                    .arg("60")
-                    .arg("-nodes")
-                    .arg("-subj")
-                    .arg("/C=AU/ST=Victoria/L=Melbourne/O=Ferndrop Pty Ltd/OU=org/CN=localhost")
-                    .output()
-                    .expect("Failed to create ssl key and certificate");
-    
+        .current_dir("./ssl/")
+        .arg("req")
+        .arg("-x509")
+        .arg("-newkey")
+        .arg("rsa:4096")
+        .arg("-keyout")
+        .arg("key.pem")
+        .arg("-out")
+        .arg("cert.pem")
+        .arg("-days")
+        .arg("60")
+        .arg("-nodes")
+        .arg("-subj")
+        .arg("/C=AU/ST=Victoria/L=Melbourne/O=Ferndrop Pty Ltd/OU=org/CN=localhost")
+        .output()
+        .expect("Failed to create ssl key and certificate");
+
     // Combine certificate and private key into one identity
     process::Command::new("openssl")
-                    .current_dir("./ssl/")
-                    .arg("pkcs12")
-                    .arg("-export")
-                    .arg("-out")
-                    .arg("identity.p12")
-                    .arg("-inkey")
-                    .arg("key.pem")
-                    .arg("-in")
-                    .arg("cert.pem")
-                    .arg("-passout")
-                    .arg("pass:testpass")
-                    .output()
-                    .expect("Failed to create a new identity");
-    
+        .current_dir("./ssl/")
+        .arg("pkcs12")
+        .arg("-export")
+        .arg("-out")
+        .arg("identity.p12")
+        .arg("-inkey")
+        .arg("key.pem")
+        .arg("-in")
+        .arg("cert.pem")
+        .arg("-passout")
+        .arg("pass:testpass")
+        .output()
+        .expect("Failed to create a new identity");
+
     // Decrypt the ssl key
     process::Command::new("openssl")
-                    .arg("rsa")
-                    .arg("-in")
-                    .arg("./ssl/key.pem")
-                    .arg("-out")
-                    .arg("./ssl/dec.pem")
-                    .output()
-                    .expect("Failed to decrypt the private key");
-                
+        .arg("rsa")
+        .arg("-in")
+        .arg("./ssl/key.pem")
+        .arg("-out")
+        .arg("./ssl/dec.pem")
+        .output()
+        .expect("Failed to decrypt the private key");
+
     // Change the decrypted private key to be readonly
     let mut permissions = metadata("./ssl/dec.pem").unwrap().permissions(); // Is there a safer way to do this?
     permissions.set_readonly(true);
@@ -121,32 +128,32 @@ fn setup_local_ssl_macos()
 
     // Add the certificate into the System keychain
     runas::Command::new("security")
-                    .arg("add-trusted-cert")
-                    .arg("-d")
-                    .arg("-r")
-                    .arg("trustRoot")
-                    .arg("-k")
-                    .arg("/Library/Keychains/System.keychain")
-                    .arg("./ssl/cert.pem")
-                    .status()
-                    .expect("Failed to add cert to keychain");
+        .arg("add-trusted-cert")
+        .arg("-d")
+        .arg("-r")
+        .arg("trustRoot")
+        .arg("-k")
+        .arg("/Library/Keychains/System.keychain")
+        .arg("./ssl/cert.pem")
+        .status()
+        .expect("Failed to add cert to keychain");
 
     runas::Command::new("security")
-                    .arg("import")
-                    .arg("./ssl/identity.p12")
-                    .arg("-t")
-                    .arg("agg")
-                    .arg("-k")
-                    .arg("/Library/Keychains/System.keychain")
-                    .arg("-P")
-                    .arg("testpass")
-                    .status()
-                    .expect("Failed to add identity to keychain");
+        .arg("import")
+        .arg("./ssl/identity.p12")
+        .arg("-t")
+        .arg("agg")
+        .arg("-k")
+        .arg("/Library/Keychains/System.keychain")
+        .arg("-P")
+        .arg("testpass")
+        .status()
+        .expect("Failed to add identity to keychain");
 
     // Lock the System keychain once certificate has been inserted
     process::Command::new("security")
-                    .arg("lock-keychain")
-                    .arg("/Library/Keychains/System.keychain")
-                    .output()
-                    .expect("Failed to lock System keychain");
+        .arg("lock-keychain")
+        .arg("/Library/Keychains/System.keychain")
+        .output()
+        .expect("Failed to lock System keychain");
 }

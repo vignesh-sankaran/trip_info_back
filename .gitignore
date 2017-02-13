@@ -1,2 +1,4 @@
+api/.project
+api/.settings/**
 db/target/**
 db/Cargo.lock
