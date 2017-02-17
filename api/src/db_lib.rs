@@ -69,13 +69,13 @@ pub fn update_user_destination<'a>(conn: &PgConnection,
 */
 #[cfg(test)]
 mod test {
-    include!(concat!(env!("OUT_DIR"), "/db_lib.rs"));
-    include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
-
     extern crate diesel;
     extern crate dotenv;
     extern crate serde;
     extern crate serde_json;
+
+    use schema;
+    use models;
 
     use diesel::pg::PgConnection;
 

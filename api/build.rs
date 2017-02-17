@@ -3,7 +3,6 @@ extern crate serde_codegen;
 extern crate runas;
 extern crate time;
 
-use std::env;
 use std::path::Path;
 use std::fs::*;
 use std::process;

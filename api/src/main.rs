@@ -11,9 +11,11 @@ extern crate hyper_native_tls;
 extern crate diesel;
 #[macro_use]
 extern crate diesel_codegen;
+extern crate trip_info_api_lib;
 
 pub mod schema;
 pub mod models;
+
 mod db_lib;
 
 use std::io::Read;
@@ -22,27 +24,7 @@ use iron::status;
 use router::Router;
 use uuid::Uuid;
 use db_lib::*;
-
-#[derive(Serialize, Debug)]
-struct UUID {
-    uuid: String,
-}
-
-#[derive(Deserialize, Clone)]
-struct HomeInfoAdd {
-    uuid: String,
-    home_address_text: String,
-    home_address_lat: String,
-    home_address_long: String,
-}
-
-#[derive(Deserialize, Clone)]
-struct DestinationInfoAdd {
-    uuid: String,
-    destination_address_text: String,
-    destination_address_lat: String,
-    destination_address_long: String,
-}
+use trip_info_api_lib::serde_types::*;
 
 fn main() {
     let mut router: Router = Router::new();
