@@ -10,18 +10,10 @@ use std::process;
 use std::io::Read;
 
 fn main() {
-    extern crate diesel_codegen_syntex;
 
     if check_cert_expiry_macos() {
         setup_local_ssl_macos();
     }
-
-    // Codegen for Diesel
-    let out_dir = env::var_os("OUT_DIR").unwrap();
-    let src_diesel = Path::new("src/db_lib.in.rs");
-    let dst_diesel = Path::new(&out_dir).join("db_lib.rs");
-
-    diesel_codegen_syntex::expand(&src_diesel, &dst_diesel).unwrap();
 }
 
 // Return true if the certificate has expired

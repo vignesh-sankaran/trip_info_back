@@ -9,7 +9,11 @@ extern crate dotenv;
 extern crate hyper_native_tls;
 #[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate diesel_codegen;
 
+pub mod schema;
+pub mod models;
 mod db_lib;
 
 use std::io::Read;
