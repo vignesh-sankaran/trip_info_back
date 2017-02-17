@@ -2,6 +2,8 @@ extern crate hyper;
 extern crate hyper_openssl;
 extern crate openssl;
 extern crate diesel;
+extern crate serde;
+extern crate serde_json;
 
 use std::io::Read;
 use hyper::Client;
@@ -39,9 +41,12 @@ fn test_new_uuid() {
     let connector = HttpsConnector::new(openssl_client);
     let client = Client::with_connector(connector);
 
-    let response = client.get(url).send();
+    let response = client.get(url).send().unwrap();
+    assert!(response.status == hyper::status::StatusCode::Ok);
 
-    assert!(response.unwrap().status == hyper::status::StatusCode::Ok);
+    //    let response_string = response.read_to_string();
+    //    let response_body_json: UUID = serde_json::from_str(response_string).unwrap();
+    //    let response_uuid = response_body_json.uuid;
 }
 
 #[test]

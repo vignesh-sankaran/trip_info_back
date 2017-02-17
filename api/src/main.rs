@@ -2,6 +2,8 @@ extern crate iron;
 extern crate router;
 extern crate uuid;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
 extern crate dotenv;
 extern crate hyper_native_tls;
@@ -17,7 +19,26 @@ use router::Router;
 use uuid::Uuid;
 use db_lib::*;
 
-include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
+#[derive(Serialize, Debug)]
+struct UUID {
+    uuid: String,
+}
+
+#[derive(Deserialize, Clone)]
+struct HomeInfoAdd {
+    uuid: String,
+    home_address_text: String,
+    home_address_lat: String,
+    home_address_long: String,
+}
+
+#[derive(Deserialize, Clone)]
+struct DestinationInfoAdd {
+    uuid: String,
+    destination_address_text: String,
+    destination_address_lat: String,
+    destination_address_long: String,
+}
 
 fn main() {
     let mut router: Router = Router::new();

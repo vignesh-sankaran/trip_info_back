@@ -16,19 +16,15 @@ fn main() {
         setup_local_ssl_macos();
     }
 
-    // Codegen for Serde
-    let out_dir = env::var_os("OUT_DIR").unwrap();
-    let src = Path::new("src/serde_types.in.rs");
-    let dst = Path::new(&out_dir).join("serde_types.rs");
-
     // Codegen for Diesel
+    let out_dir = env::var_os("OUT_DIR").unwrap();
     let src_diesel = Path::new("src/db_lib.in.rs");
     let dst_diesel = Path::new(&out_dir).join("db_lib.rs");
 
-    serde_codegen::expand(&src, &dst).unwrap();
     diesel_codegen_syntex::expand(&src_diesel, &dst_diesel).unwrap();
 }
 
+// Return true if the certificate has expired
 fn check_cert_expiry_macos() -> bool {
     // Read certs
     if Path::new("./ssl").exists() {
@@ -42,8 +38,8 @@ fn check_cert_expiry_macos() -> bool {
         // Reference for date time parsing: http://www.cplusplus.com/reference/ctime/strftime/
         let not_after_time = time::strptime(&not_after_string, "%b %d %H:%M:%S %Y %Z").unwrap();
 
+        // Looks like operator overloading can be done in Rust too :)
         if time::now() < not_after_time {
-            // Looks like operator overloading can be done in Rust too :)
             return false;
         }
     }
@@ -74,6 +70,7 @@ fn setup_local_ssl_macos() {
     create_dir("./ssl/").expect("Unable to create new ssl directory");
 
     // Create new ssl key and certificate
+    // Todo: Use the rust-openssl bindings to do this instead
     process::Command::new("openssl")
         .current_dir("./ssl/")
         .arg("req")
@@ -93,6 +90,7 @@ fn setup_local_ssl_macos() {
         .expect("Failed to create ssl key and certificate");
 
     // Combine certificate and private key into one identity
+    // Todo: Use the rust-openssl bindings to do this too
     process::Command::new("openssl")
         .current_dir("./ssl/")
         .arg("pkcs12")
@@ -127,6 +125,7 @@ fn setup_local_ssl_macos() {
     println!("Change permission of decrypted private key: {:?}", result);
 
     // Add the certificate into the System keychain
+    // If we have some time to kill, make a Rust to macOS Keychain bindings library
     runas::Command::new("security")
         .arg("add-trusted-cert")
         .arg("-d")
