@@ -26,11 +26,11 @@ use uuid::Uuid;
 use serde_types::*;
 use db_lib::*;
 
-pub fn start_server() -> iron::Listening {
+pub fn start_server(ip: std::net::Ipv4Addr, port: u16) -> iron::Listening {
     let ssl_config = hyper_native_tls::NativeTlsServer::new("./ssl/identity.p12", "testpass")
         .unwrap();
 
-    Iron::new(router_config()).https("0.0.0.0:20000", ssl_config).unwrap()
+    Iron::new(router_config()).https((ip, port), ssl_config).unwrap()
 }
 
 fn router_config() -> Router {

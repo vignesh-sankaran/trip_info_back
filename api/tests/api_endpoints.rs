@@ -4,14 +4,18 @@ extern crate openssl;
 extern crate diesel;
 extern crate serde;
 extern crate serde_json;
+extern crate trip_info_api_lib;
 
 use std::io::Read;
 use hyper::Client;
 use hyper::net::HttpsConnector;
 use openssl::ssl::*;
+use trip_info_api_lib::*;
+use trip_info_api_lib::serde_types::*;
 
 #[test]
 fn test_new_uuid() {
+    let mut server = start_server(std::net::Ipv4Addr::new(0, 0, 0, 0), 20000);
     let mut url = hyper::Url::parse("https://127.0.0.1/newUUID").unwrap();
     let _ = url.set_port(Some(20000));
 
@@ -47,6 +51,7 @@ fn test_new_uuid() {
     //    let response_string = response.read_to_string();
     //    let response_body_json: UUID = serde_json::from_str(response_string).unwrap();
     //    let response_uuid = response_body_json.uuid;
+    server.close();
 }
 
 #[test]
