@@ -1,4 +1,4 @@
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UUID {
     pub uuid: String,
 }
