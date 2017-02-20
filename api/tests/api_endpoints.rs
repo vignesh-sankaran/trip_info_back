@@ -84,6 +84,7 @@ fn test_add_user_home() {
         .expect("Couldn't load up the db");
 
     let last_entry = last_entry_raw.last().unwrap();
+
     assert!(last_entry.home_address_text == home_address_text_string);
     assert!(last_entry.home_address_lat == home_address_lat_string);
     assert!(last_entry.home_address_long == home_address_long_string);
@@ -99,10 +100,42 @@ fn test_add_user_destination() {
     let port = 20002;
     let mut url = hyper::Url::parse("https://127.0.0.1/journey/destination").unwrap();
     let _ = url.set_port(Some(port));
-    let uuid_string = "3d683ffe-c03e-49a6-8662-c0d69decaeee";
+
     let client = create_client();
     let mut server = start_server(std::net::Ipv4Addr::new(0, 0, 0, 0), port);
 
-    assert!(true);
+    let uuid_string = "3d683ffe-c03e-49a6-8662-c0d69decaeee";
+    let db_conn = db_connection();
+
+    let destination_address_text_string = "141 Bourke Street, Melbourne VIC 3000";
+    let destination_address_lat_string = "-37";
+    let destination_address_long_string = "142";
+
+    create_user(&db_conn, uuid_string);
+
+    let request_body_struct = DestinationInfoAdd {
+        uuid: uuid_string.to_string(),
+        destination_address_text: destination_address_text_string.to_string(),
+        destination_address_lat: destination_address_lat_string.to_string(),
+        destination_address_long: destination_address_long_string.to_string(),
+    };
+
+    let request_body_json = serde_json::to_string(&request_body_struct).unwrap();
+    let response = client.post(url).body(&request_body_json).send().unwrap();
+
+    assert_eq!(response.status, hyper::status::StatusCode::Ok);
+
+    let last_entry_raw = user_info.filter(uuid.eq(uuid_string.clone()))
+        .load::<self::models::UserInfo>(&db_conn)
+        .expect("Couldn't load up the db");
+
+    let last_entry = last_entry_raw.last().unwrap();
+
+    assert!(last_entry.destination_address_text == destination_address_text_string);
+    assert!(last_entry.destination_address_lat == destination_address_lat_string);
+    assert!(last_entry.destination_address_long == destination_address_long_string);
+
+    helper_delete_user(&db_conn, &uuid_string);
+
     let _ = server.close();
 }
