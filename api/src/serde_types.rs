@@ -3,7 +3,7 @@ pub struct UUID {
     pub uuid: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct HomeInfoAdd {
     pub uuid: String,
     pub home_address_text: String,
@@ -11,7 +11,7 @@ pub struct HomeInfoAdd {
     pub home_address_long: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct DestinationInfoAdd {
     pub uuid: String,
     pub destination_address_text: String,

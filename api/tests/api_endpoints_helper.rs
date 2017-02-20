@@ -8,16 +8,29 @@ extern crate openssl;
 use diesel::pg::PgConnection;
 use self::hyper::Client;
 
-
-pub fn helper_db_connection() -> PgConnection {
+pub fn db_connection() -> PgConnection {
     use std::env;
-    use dotenv::dotenv;
+    use self::dotenv::dotenv;
     use diesel::prelude::*;
 
     dotenv().ok();
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url))
+}
+
+pub fn create_user(conn: &PgConnection, uuid_string: &str) {
+    use trip_info_api_lib::schema::user_info;
+    use diesel::insert;
+    use diesel::prelude::*;
+    use trip_info_api_lib::models::{UserInfo, NewUser};
+
+    let new_user = NewUser { uuid: uuid_string };
+
+    let _: UserInfo = insert(&new_user)
+        .into(user_info::table)
+        .get_result(conn)
+        .expect("Error inserting new user into user_info DB");
 }
 
 pub fn helper_delete_user(conn: &PgConnection, uuid_string: &str) {
