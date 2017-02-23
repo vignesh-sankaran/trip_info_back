@@ -12,7 +12,6 @@ name = "trip_info_api_lib"
 path = "src/lib.rs"
 
 [build-dependencies]
-serde_codegen = "0.8.21"
 runas = "0.1.1"
 openssl = "0.9.*"
 time = "0.1.*"
@@ -26,7 +25,7 @@ openssl = "0.9.*"
 iron = "0.5.*"
 router = "0.5.*"
 hyper-native-tls = "0.2.*"
-uuid = { version = "0.3.1", features = ["v4"] }
+uuid = { version = "0.4.*", features = ["v4"] }
 serde = "0.9.*"
 serde_derive = "0.9.*"
 serde_json = "0.9.*"

@@ -1,5 +1,4 @@
 extern crate openssl;
-extern crate serde_codegen;
 extern crate runas;
 extern crate time;
 
