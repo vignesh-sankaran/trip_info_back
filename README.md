@@ -1,5 +1,5 @@
 # trip_info_back
-# THIS PROJECT IS ABANDONED
+## THIS PROJECT IS ABANDONED
 
 A collection of systems which serve as the backend for Trip Info. It currently consists of the following:
 
